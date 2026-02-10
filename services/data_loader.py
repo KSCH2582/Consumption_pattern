@@ -15,6 +15,12 @@ class DataLoader:
         else:
             df = pd.read_excel(uploaded_file)
 
+        # date 컬럼을 datetime으로 변환
+        if 'date' in df.columns:
+            df['date'] = pd.to_datetime(df['date'])
+            # 연월 컬럼 추가
+            df['year_month'] = df['date'].dt.strftime('%Y-%m')
+
         return ExpenseData(df)
 
     @staticmethod
