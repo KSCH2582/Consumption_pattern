@@ -18,9 +18,7 @@ def render_sidebar():
         if st.session_state.expense_data is not None:
 
             st.header("필터")
-
             _render_filters()
-
             st.markdown("---")
 
 
@@ -33,26 +31,17 @@ def render_sidebar():
         uploaded_file = st.file_uploader(
             "CSV 또는 Excel 파일",
             type=["csv", "xlsx", "xls"],
-            key="uploader"
+            key="file_uploader"
         )
 
 
-        # prev_file_name 없으면 생성
-
-        if "prev_file_name" not in st.session_state:
-
-            st.session_state.prev_file_name = None
+        # 마지막 파일 객체 저장용
+        if "last_uploaded_file" not in st.session_state:
+            st.session_state.last_uploaded_file = None
 
 
-        # 새 파일일 때만 처리
-
-        if (
-
-            uploaded_file is not None
-
-            and uploaded_file.name != st.session_state.prev_file_name
-
-        ):
+        # 새 파일 업로드 감지 (핵심 해결 코드)
+        if uploaded_file is not None and uploaded_file != st.session_state.last_uploaded_file:
 
             try:
 
@@ -63,9 +52,9 @@ def render_sidebar():
                     file_name=uploaded_file.name
                 )
 
-                st.session_state.prev_file_name = uploaded_file.name
+                st.session_state.last_uploaded_file = uploaded_file
 
-                st.success("파일 업로드 완료")
+                st.success(f"{uploaded_file.name} 업로드 완료")
 
                 st.rerun()
 
@@ -83,7 +72,6 @@ def render_sidebar():
 
         st.header("샘플 데이터")
 
-
         if st.button("샘플 데이터 로드"):
 
             try:
@@ -92,10 +80,11 @@ def render_sidebar():
 
                 SessionManager.set_data(
                     sample_data,
-                    file_name="sample_data"
+                    file_name="sample"
                 )
 
-                st.session_state.prev_file_name = "sample_data"
+                # uploader 상태 초기화 (핵심)
+                st.session_state.last_uploaded_file = None
 
                 st.success("샘플 데이터 로드 완료")
 
@@ -121,15 +110,12 @@ def _render_filters():
     if "date" in data.df.columns:
 
         min_date = data.df["date"].min().date()
-
         max_date = data.df["date"].max().date()
-
 
         date_range = st.date_input(
             "기간",
             (min_date, max_date)
         )
-
 
         if len(date_range) == 2:
 
@@ -148,7 +134,6 @@ def _render_filters():
             categories,
             default=categories
         )
-
 
         if selected:
 
