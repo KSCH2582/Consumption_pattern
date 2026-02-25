@@ -45,6 +45,12 @@ def render_sidebar():
             st.markdown("---")
             st.header("🔍 필터")
             _render_filters()
+            
+            st.markdown("---")
+            if st.button("🗑️ 데이터 제거", key="btn_clear", use_container_width=True):
+                SessionManager.clear_data()
+                st.success("✅ 데이터가 제거되었습니다!")
+                st.rerun()
 
 def _render_filters():
     base_data = st.session_state.expense_data
@@ -93,3 +99,5 @@ def _render_filters():
             st.warning(f"카테고리 필터링 오류: {str(e)}")
 
     SessionManager.set_filtered_data(filtered)
+
+
