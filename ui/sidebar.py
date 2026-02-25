@@ -12,7 +12,7 @@ def render_sidebar():
     with st.sidebar:
 
         # =====================
-        # 1. 필터 (맨 위)
+        # 필터
         # =====================
 
         if st.session_state.expense_data is not None:
@@ -25,18 +25,34 @@ def render_sidebar():
 
 
         # =====================
-        # 2. 파일 업로드
+        # 데이터 업로드
         # =====================
 
         st.header("데이터 업로드")
 
         uploaded_file = st.file_uploader(
             "CSV 또는 Excel 파일",
-            type=["csv", "xlsx", "xls"]
+            type=["csv", "xlsx", "xls"],
+            key="uploader"
         )
 
 
-        if uploaded_file is not None:
+        # prev_file_name 없으면 생성
+
+        if "prev_file_name" not in st.session_state:
+
+            st.session_state.prev_file_name = None
+
+
+        # 새 파일일 때만 처리
+
+        if (
+
+            uploaded_file is not None
+
+            and uploaded_file.name != st.session_state.prev_file_name
+
+        ):
 
             try:
 
@@ -46,6 +62,8 @@ def render_sidebar():
                     expense_data,
                     file_name=uploaded_file.name
                 )
+
+                st.session_state.prev_file_name = uploaded_file.name
 
                 st.success("파일 업로드 완료")
 
@@ -60,7 +78,7 @@ def render_sidebar():
 
 
         # =====================
-        # 3. 샘플 데이터
+        # 샘플 데이터
         # =====================
 
         st.header("샘플 데이터")
@@ -74,8 +92,10 @@ def render_sidebar():
 
                 SessionManager.set_data(
                     sample_data,
-                    file_name="sample"
+                    file_name="sample_data"
                 )
+
+                st.session_state.prev_file_name = "sample_data"
 
                 st.success("샘플 데이터 로드 완료")
 
