@@ -12,18 +12,20 @@ def render_sidebar():
     with st.sidebar:
 
         # =====================
-        # 필터
+        # 1. 필터 (데이터 있을 때만)
         # =====================
 
         if st.session_state.expense_data is not None:
 
             st.header("필터")
+
             _render_filters()
+
             st.markdown("---")
 
 
         # =====================
-        # 데이터 업로드
+        # 2. 데이터 업로드
         # =====================
 
         st.header("데이터 업로드")
@@ -35,13 +37,39 @@ def render_sidebar():
         )
 
 
-        # 마지막 파일 객체 저장용
+        # 세션 변수 생성
+
         if "last_uploaded_file" not in st.session_state:
+
             st.session_state.last_uploaded_file = None
 
 
-        # 새 파일 업로드 감지 (핵심 해결 코드)
-        if uploaded_file is not None and uploaded_file != st.session_state.last_uploaded_file:
+        # =====================
+        # ✅ X 버튼 눌렀을 때 (초기화 핵심 코드)
+        # =====================
+
+        if uploaded_file is None and st.session_state.last_uploaded_file is not None:
+
+            # 데이터 초기화
+
+            SessionManager.clear_data()
+
+            # uploader 상태 제거 (핵심)
+
+            st.session_state.pop("file_uploader", None)
+
+            # 파일 상태 초기화
+
+            st.session_state.last_uploaded_file = None
+
+            st.rerun()
+
+
+        # =====================
+        # 새 파일 업로드 처리
+        # =====================
+
+        elif uploaded_file is not None and uploaded_file != st.session_state.last_uploaded_file:
 
             try:
 
@@ -67,10 +95,11 @@ def render_sidebar():
 
 
         # =====================
-        # 샘플 데이터
+        # 3. 샘플 데이터
         # =====================
 
         st.header("샘플 데이터")
+
 
         if st.button("샘플 데이터 로드"):
 
@@ -83,7 +112,10 @@ def render_sidebar():
                     file_name="sample"
                 )
 
-                # uploader 상태 초기화 (핵심)
+                # uploader 상태 제거
+
+                st.session_state.pop("file_uploader", None)
+
                 st.session_state.last_uploaded_file = None
 
                 st.success("샘플 데이터 로드 완료")
@@ -97,7 +129,7 @@ def render_sidebar():
 
 
 # =====================
-# 필터
+# 필터 함수
 # =====================
 
 def _render_filters():
@@ -110,12 +142,15 @@ def _render_filters():
     if "date" in data.df.columns:
 
         min_date = data.df["date"].min().date()
+
         max_date = data.df["date"].max().date()
+
 
         date_range = st.date_input(
             "기간",
             (min_date, max_date)
         )
+
 
         if len(date_range) == 2:
 
@@ -129,11 +164,13 @@ def _render_filters():
 
         categories = data.df["category"].unique()
 
+
         selected = st.multiselect(
             "카테고리",
             categories,
             default=categories
         )
+
 
         if selected:
 
