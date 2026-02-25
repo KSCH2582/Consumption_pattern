@@ -7,92 +7,109 @@ from utils.session import SessionManager
 
 def render_sidebar():
 
-    _ensure_session_keys()
+    SessionManager.init()
 
     with st.sidebar:
 
-        # ==============================
-        # 1️⃣ 필터 (항상 맨 위)
-        # ==============================
+        # =====================
+        # 1. 필터 (맨 위)
+        # =====================
 
         if st.session_state.expense_data is not None:
 
             st.header("필터")
+
             _render_filters()
+
             st.markdown("---")
 
 
-        # ==============================
-        # 2️⃣ 데이터 업로드
-        # ==============================
+        # =====================
+        # 2. 파일 업로드
+        # =====================
 
         st.header("데이터 업로드")
 
         uploaded_file = st.file_uploader(
             "CSV 또는 Excel 파일",
-            type=["csv", "xlsx", "xls"],
-            key="file_uploader"
+            type=["csv", "xlsx", "xls"]
         )
 
 
-        # 파일 제거 감지
-        if uploaded_file is None and st.session_state.prev_file_name is not None:
-
-            SessionManager.clear_data()
-            st.session_state.prev_file_name = None
-
-            st.rerun()
-
-
-        # 새 파일 업로드
         if uploaded_file is not None:
 
-            if uploaded_file.name != st.session_state.prev_file_name:
+            try:
 
-                _handle_file_upload(uploaded_file)
+                expense_data = DataLoader.load(uploaded_file)
 
+                SessionManager.set_data(
+                    expense_data,
+                    file_name=uploaded_file.name
+                )
+
+                st.success("파일 업로드 완료")
+
+                st.rerun()
+
+            except Exception as e:
+
+                st.error(f"업로드 실패: {e}")
 
 
         st.markdown("---")
 
 
-        # ==============================
-        # 3️⃣ 샘플 데이터
-        # ==============================
+        # =====================
+        # 3. 샘플 데이터
+        # =====================
 
-        st.markdown("샘플 데이터")
-
-        if st.button("샘플 데이터 로드", use_container_width=True):
-
-            _handle_sample_data()
+        st.header("샘플 데이터")
 
 
+        if st.button("샘플 데이터 로드"):
 
-# ==============================
-# 필터 렌더링
-# ==============================
+            try:
+
+                sample_data = DataLoader.generate_sample()
+
+                SessionManager.set_data(
+                    sample_data,
+                    file_name="sample"
+                )
+
+                st.success("샘플 데이터 로드 완료")
+
+                st.rerun()
+
+            except Exception as e:
+
+                st.error(f"샘플 로드 실패: {e}")
+
+
+
+# =====================
+# 필터
+# =====================
 
 def _render_filters():
 
-    base_data = st.session_state.expense_data
+    data = st.session_state.expense_data
 
-    if base_data is None:
-        return
-
-    filtered = base_data
+    filtered = data
 
 
-    # 날짜 필터
-    if "date" in base_data.df.columns:
+    if "date" in data.df.columns:
 
-        min_date = base_data.df["date"].min().date()
-        max_date = base_data.df["date"].max().date()
+        min_date = data.df["date"].min().date()
+
+        max_date = data.df["date"].max().date()
+
 
         date_range = st.date_input(
             "기간",
-            (min_date, max_date),
-            key="filter_date"
+            (min_date, max_date)
         )
+
 
         if len(date_range) == 2:
 
@@ -102,17 +119,16 @@ def _render_filters():
             )
 
 
-    # 카테고리 필터
-    if "category" in base_data.df.columns:
+    if "category" in data.df.columns:
 
-        categories = base_data.df["category"].unique()
+        categories = data.df["category"].unique()
 
         selected = st.multiselect(
             "카테고리",
             categories,
-            default=categories,
-            key="filter_category"
+            default=categories
         )
+
 
         if selected:
 
@@ -120,82 +136,3 @@ def _render_filters():
 
 
     SessionManager.set_filtered_data(filtered)
-
-
-
-# ==============================
-# 파일 업로드 처리
-# ==============================
-
-def _handle_file_upload(uploaded_file):
-
-    try:
-
-        expense_data = DataLoader.load(uploaded_file)
-
-        SessionManager.set_data(
-            expense_data,
-            file_name=uploaded_file.name
-        )
-
-        st.session_state.prev_file_name = uploaded_file.name
-
-        st.success(f"업로드 완료: {uploaded_file.name}")
-
-        st.rerun()
-
-    except Exception as e:
-
-        st.error(f"파일 로드 오류: {str(e)}")
-
-
-
-# ==============================
-# 샘플 데이터 처리
-# ==============================
-
-def _handle_sample_data():
-
-    try:
-
-        sample_data = DataLoader.generate_sample()
-
-        SessionManager.set_data(
-            sample_data,
-            file_name="sample_expense_data.csv"
-        )
-
-        st.session_state.prev_file_name = "sample_expense_data.csv"
-
-        st.success("샘플 데이터 로드 완료")
-
-        st.rerun()
-
-    except Exception as e:
-
-        st.error(f"샘플 데이터 오류: {str(e)}")
-
-
-
-# ==============================
-# 세션 초기화
-# ==============================
-
-def _ensure_session_keys():
-
-    defaults = {
-
-        "expense_data": None,
-        "filtered_data": None,
-        "last_insights": None,
-        "last_report": None,
-        "file_name": None,
-        "prev_file_name": None
-
-    }
-
-    for key, value in defaults.items():
-
-        if key not in st.session_state:
-
-            st.session_state[key] = value
