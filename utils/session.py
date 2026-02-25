@@ -1,7 +1,7 @@
-# utils/session.py
 import streamlit as st
 
 class SessionManager:
+
     @staticmethod
     def init():
         defaults = {
@@ -16,11 +16,16 @@ class SessionManager:
                 st.session_state[key] = value
 
     @staticmethod
+    def clear_data():
+        """전체 세션 상태를 초기화합니다."""
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+
+    @staticmethod
     def set_data(expense_data, file_name=None):
         st.session_state.expense_data = expense_data
         st.session_state.filtered_data = expense_data
         st.session_state.file_name = file_name
-        # 새로운 데이터 로드 시 이전 분석 결과 초기화
         st.session_state.last_insights = None
         st.session_state.last_report = None
 
