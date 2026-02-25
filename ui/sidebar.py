@@ -9,16 +9,17 @@ def render_sidebar():
 
     SessionManager.init()
 
-
-    # ✅ uploader key index (핵심)
     if "uploader_key_index" not in st.session_state:
         st.session_state.uploader_key_index = 0
+
+    if "prev_file_name" not in st.session_state:
+        st.session_state.prev_file_name = None
 
 
     with st.sidebar:
 
         # =====================
-        # 데이터 적용 해제 버튼
+        # 데이터 적용 해제
         # =====================
 
         if st.session_state.expense_data is not None:
@@ -27,7 +28,8 @@ def render_sidebar():
 
                 SessionManager.clear_data()
 
-                # uploader 완전 초기화 (핵심)
+                st.session_state.prev_file_name = None
+
                 st.session_state.uploader_key_index += 1
 
                 st.rerun()
@@ -49,7 +51,7 @@ def render_sidebar():
 
 
         # =====================
-        # 파일 업로드
+        # 업로드
         # =====================
 
         st.header("데이터 업로드")
@@ -65,24 +67,29 @@ def render_sidebar():
         )
 
 
+        # ✅ 핵심: 새 파일일 때만 로드
         if uploaded_file is not None:
 
-            try:
+            if uploaded_file.name != st.session_state.prev_file_name:
 
-                expense_data = DataLoader.load(uploaded_file)
+                try:
 
-                SessionManager.set_data(
-                    expense_data,
-                    file_name=uploaded_file.name
-                )
+                    expense_data = DataLoader.load(uploaded_file)
 
-                st.success("파일 업로드 완료")
+                    SessionManager.set_data(
+                        expense_data,
+                        file_name=uploaded_file.name
+                    )
 
-                st.rerun()
+                    st.session_state.prev_file_name = uploaded_file.name
 
-            except Exception as e:
+                    st.success("파일 업로드 완료")
 
-                st.error(e)
+                    st.rerun()
+
+                except Exception as e:
+
+                    st.error(e)
 
 
 
@@ -91,7 +98,7 @@ def render_sidebar():
 
 
         # =====================
-        # 샘플 데이터
+        # 샘플
         # =====================
 
         st.header("샘플 데이터")
@@ -108,10 +115,11 @@ def render_sidebar():
                     file_name="sample"
                 )
 
-                # uploader 초기화 (핵심)
+                st.session_state.prev_file_name = "sample"
+
                 st.session_state.uploader_key_index += 1
 
-                st.success("샘플 데이터 적용됨")
+                st.success("샘플 데이터 적용")
 
                 st.rerun()
 
