@@ -11,15 +11,21 @@ def render_sidebar():
 
         uploaded_file = st.file_uploader(
             "CSV 또는 Excel 파일",
-            type=["csv", "xlsx", "xls"]
+            type=["csv", "xlsx", "xls"],
+            key="file_uploader"
         )
 
-        # 파일이 제거되었을 때 (X 버튼 클릭)
-        if uploaded_file is None and st.session_state.expense_data is not None:
+        # 파일 업로드 상태 추적
+        if "prev_file_name" not in st.session_state:
+            st.session_state.prev_file_name = None
+
+        # 파일이 제거되었을 때 (업로드된 파일이 없고 이전엔 있었을 때)
+        if uploaded_file is None and st.session_state.prev_file_name is not None:
             SessionManager.clear_data()
-            st.success("✅ 데이터가 제거되었습니다!")
+            st.session_state.prev_file_name = None
             st.rerun()
 
+        # 새 파일이 업로드되었을 때
         if uploaded_file:
             try:
                 expense_data = DataLoader.load(uploaded_file)
@@ -27,6 +33,7 @@ def render_sidebar():
                     expense_data,
                     file_name=uploaded_file.name
                 )
+                st.session_state.prev_file_name = uploaded_file.name
                 st.success(f"업로드 완료: {uploaded_file.name}")
             except Exception as e:
                 st.error(f"파일 로드 오류: {str(e)}")
@@ -35,15 +42,15 @@ def render_sidebar():
         # 샘플 데이터 버튼
         st.markdown("---")
         st.markdown("### 📥 샘플 데이터")
-        if st.button("🎯 샘플 데이터 로드"):
+        if st.button("🎯 샘플 데이터 로드", key="btn_sample"):
             try:
                 sample_data = DataLoader.generate_sample()
                 SessionManager.set_data(
                     sample_data,
                     file_name="sample_expense_data.csv"
                 )
+                st.session_state.prev_file_name = "sample_expense_data.csv"
                 st.success("✅ 샘플 데이터 로드 완료!")
-                st.rerun()
             except Exception as e:
                 st.error(f"샘플 데이터 로드 오류: {str(e)}")
 
