@@ -18,6 +18,17 @@ __pycache__/
 .vscode/
 .idea/
 
+# Streamlit secrets (API keys etc.)
+.streamlit/secrets.toml
+
 # OS
 .DS_Store
 Thumbs.db
+
+# Data files
+*.csv
+*.xlsx
+*.xls
+
+# Environment
+.env

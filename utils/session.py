@@ -8,6 +8,7 @@ class SessionManager:
             "expense_data": None,
             "filtered_data": None,
             "last_insights": None,
+            "last_report": None,
             "file_name": None
         }
         for key, value in defaults.items():
@@ -27,3 +28,7 @@ class SessionManager:
     @staticmethod
     def save_insights(insights: str):
         st.session_state.last_insights = insights
+
+    @staticmethod
+    def save_report(report: str):
+        st.session_state.last_report = report

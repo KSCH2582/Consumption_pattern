@@ -6,14 +6,24 @@ from models.expense_data import ExpenseData
 class DataLoader:
     @staticmethod
     def load(uploaded_file) -> ExpenseData:
-        if uploaded_file.name.endswith(".csv"):
-            try:
-                df = pd.read_csv(uploaded_file, encoding="utf-8")
-            except UnicodeDecodeError:
-                uploaded_file.seek(0)
-                df = pd.read_csv(uploaded_file, encoding="cp949")
-        else:
-            df = pd.read_excel(uploaded_file)
+        try:
+            if uploaded_file.name.endswith(".csv"):
+                try:
+                    df = pd.read_csv(uploaded_file, encoding="utf-8")
+                except (UnicodeDecodeError, Exception):
+                    uploaded_file.seek(0)
+                    try:
+                        df = pd.read_csv(uploaded_file, encoding="cp949")
+                    except Exception:
+                        uploaded_file.seek(0)
+                        df = pd.read_csv(uploaded_file, encoding="utf-8-sig")
+            else:
+                df = pd.read_excel(uploaded_file)
+            
+            if df.empty:
+                raise ValueError("데이터가 비어있습니다.")
+        except Exception as e:
+            raise RuntimeError(f"파일 읽기 실패: {str(e)}")
 
         # date 컬럼을 datetime으로 변환 (coerce로 무효한 값은 NaT)
         if 'date' in df.columns:
