@@ -12,7 +12,25 @@ def render_sidebar():
     with st.sidebar:
 
         # =====================
-        # 1. 필터 (데이터 있을 때만)
+        # 0. 초기화 버튼 (핵심 추가)
+        # =====================
+
+        if st.session_state.expense_data is not None:
+
+            if st.button("데이터 적용 해제"):
+
+                SessionManager.clear_data()
+
+                # uploader 초기화
+                st.session_state.pop("file_uploader", None)
+
+                st.session_state.last_uploaded_file = None
+
+                st.rerun()
+
+
+        # =====================
+        # 1. 필터
         # =====================
 
         if st.session_state.expense_data is not None:
@@ -25,7 +43,7 @@ def render_sidebar():
 
 
         # =====================
-        # 2. 데이터 업로드
+        # 2. 파일 업로드
         # =====================
 
         st.header("데이터 업로드")
@@ -37,39 +55,14 @@ def render_sidebar():
         )
 
 
-        # 세션 변수 생성
-
         if "last_uploaded_file" not in st.session_state:
 
             st.session_state.last_uploaded_file = None
 
 
-        # =====================
-        # ✅ X 버튼 눌렀을 때 (초기화 핵심 코드)
-        # =====================
+        # 새 파일 업로드
 
-        if uploaded_file is None and st.session_state.last_uploaded_file is not None:
-
-            # 데이터 초기화
-
-            SessionManager.clear_data()
-
-            # uploader 상태 제거 (핵심)
-
-            st.session_state.pop("file_uploader", None)
-
-            # 파일 상태 초기화
-
-            st.session_state.last_uploaded_file = None
-
-            st.rerun()
-
-
-        # =====================
-        # 새 파일 업로드 처리
-        # =====================
-
-        elif uploaded_file is not None and uploaded_file != st.session_state.last_uploaded_file:
+        if uploaded_file is not None and uploaded_file != st.session_state.last_uploaded_file:
 
             try:
 
@@ -82,13 +75,13 @@ def render_sidebar():
 
                 st.session_state.last_uploaded_file = uploaded_file
 
-                st.success(f"{uploaded_file.name} 업로드 완료")
+                st.success("파일 업로드 완료")
 
                 st.rerun()
 
             except Exception as e:
 
-                st.error(f"업로드 실패: {e}")
+                st.error(e)
 
 
         st.markdown("---")
@@ -99,7 +92,6 @@ def render_sidebar():
         # =====================
 
         st.header("샘플 데이터")
-
 
         if st.button("샘플 데이터 로드"):
 
@@ -112,24 +104,23 @@ def render_sidebar():
                     file_name="sample"
                 )
 
-                # uploader 상태 제거
-
+                # 핵심: uploader 완전 초기화
                 st.session_state.pop("file_uploader", None)
 
                 st.session_state.last_uploaded_file = None
 
-                st.success("샘플 데이터 로드 완료")
+                st.success("샘플 데이터 적용됨")
 
                 st.rerun()
 
             except Exception as e:
 
-                st.error(f"샘플 로드 실패: {e}")
+                st.error(e)
 
 
 
 # =====================
-# 필터 함수
+# 필터
 # =====================
 
 def _render_filters():
