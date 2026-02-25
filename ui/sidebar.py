@@ -9,22 +9,29 @@ def render_sidebar():
 
     SessionManager.init()
 
+    # uploader 초기화용 key index
     if "uploader_key_index" not in st.session_state:
         st.session_state.uploader_key_index = 0
 
+    # 이전 파일명
     if "prev_file_name" not in st.session_state:
         st.session_state.prev_file_name = None
 
 
+    uploader_key = f"file_uploader_{st.session_state.uploader_key_index}"
+
+
     with st.sidebar:
 
-        # =====================
-        # 데이터 적용 해제
-        # =====================
+        # ============================
+        # 현재 데이터 상태 표시
+        # ============================
 
-        if st.session_state.expense_data is not None:
+        if st.session_state.file_name:
 
-            if st.button("데이터 적용 해제"):
+            st.success(f"현재 데이터: {st.session_state.file_name}")
+
+            if st.button("데이터 제거"):
 
                 SessionManager.clear_data()
 
@@ -35,10 +42,12 @@ def render_sidebar():
                 st.rerun()
 
 
+        st.markdown("---")
 
-        # =====================
+
+        # ============================
         # 필터
-        # =====================
+        # ============================
 
         if st.session_state.expense_data is not None:
 
@@ -50,40 +59,48 @@ def render_sidebar():
 
 
 
-        # =====================
-        # 업로드
-        # =====================
+        # ============================
+        # 파일 업로드
+        # ============================
 
         st.header("데이터 업로드")
 
 
-        uploader_key = f"file_uploader_{st.session_state.uploader_key_index}"
-
-
         uploaded_file = st.file_uploader(
-            "CSV 또는 Excel 파일",
+            "CSV 또는 Excel",
             type=["csv", "xlsx", "xls"],
             key=uploader_key
         )
 
 
-        # ✅ 핵심: 새 파일일 때만 로드
+        # ✅ X 눌렀을 때 감지
+        if uploaded_file is None and st.session_state.prev_file_name not in (None, "sample"):
+
+            SessionManager.clear_data()
+
+            st.session_state.prev_file_name = None
+
+            st.session_state.uploader_key_index += 1
+
+            st.rerun()
+
+
+
+        # ✅ 새 파일 업로드
         if uploaded_file is not None:
 
             if uploaded_file.name != st.session_state.prev_file_name:
 
                 try:
 
-                    expense_data = DataLoader.load(uploaded_file)
+                    data = DataLoader.load(uploaded_file)
 
                     SessionManager.set_data(
-                        expense_data,
+                        data,
                         file_name=uploaded_file.name
                     )
 
                     st.session_state.prev_file_name = uploaded_file.name
-
-                    st.success("파일 업로드 완료")
 
                     st.rerun()
 
@@ -97,42 +114,34 @@ def render_sidebar():
 
 
 
-        # =====================
-        # 샘플
-        # =====================
+        # ============================
+        # 샘플 데이터
+        # ============================
 
         st.header("샘플 데이터")
 
 
         if st.button("샘플 데이터 로드"):
 
-            try:
+            sample = DataLoader.generate_sample()
 
-                sample_data = DataLoader.generate_sample()
+            SessionManager.set_data(
+                sample,
+                file_name="sample"
+            )
 
-                SessionManager.set_data(
-                    sample_data,
-                    file_name="sample"
-                )
+            st.session_state.prev_file_name = "sample"
 
-                st.session_state.prev_file_name = "sample"
+            st.session_state.uploader_key_index += 1
 
-                st.session_state.uploader_key_index += 1
-
-                st.success("샘플 데이터 적용")
-
-                st.rerun()
-
-            except Exception as e:
-
-                st.error(e)
+            st.rerun()
 
 
 
 
-# =====================
+# ============================
 # 필터
-# =====================
+# ============================
 
 def _render_filters():
 
