@@ -14,6 +14,12 @@ def render_sidebar():
             type=["csv", "xlsx", "xls"]
         )
 
+        # 파일이 제거되었을 때 (X 버튼 클릭)
+        if uploaded_file is None and st.session_state.expense_data is not None:
+            SessionManager.clear_data()
+            st.success("✅ 데이터가 제거되었습니다!")
+            st.rerun()
+
         if uploaded_file:
             try:
                 expense_data = DataLoader.load(uploaded_file)
@@ -45,12 +51,6 @@ def render_sidebar():
             st.markdown("---")
             st.header("🔍 필터")
             _render_filters()
-            
-            st.markdown("---")
-            if st.button("🗑️ 데이터 제거", key="btn_clear", use_container_width=True):
-                SessionManager.clear_data()
-                st.success("✅ 데이터가 제거되었습니다!")
-                st.rerun()
 
 def _render_filters():
     base_data = st.session_state.expense_data
