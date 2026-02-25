@@ -36,30 +36,26 @@ def render_sidebar():
         if st.session_state.expense_data:
             st.markdown("---")
             st.header("🔍 필터")
-
             _render_filters()
-
 
 def _render_filters():
     base_data = st.session_state.expense_data
+    filtered = base_data
 
-    # 날짜 필터
     if 'date' in base_data.df.columns:
-        min_date = base_data.df['date'].min().date()
-        max_date = base_data.df['date'].max().date()
+        valid_dates = base_data.df['date'].dropna()
+        if not valid_dates.empty:
+            min_date = valid_dates.min().date()
+            max_date = valid_dates.max().date()
+            date_range = st.date_input(
+                "기간",
+                (min_date, max_date),
+                min_value=min_date,
+                max_value=max_date
+            )
+            if len(date_range) == 2:
+                filtered = filtered.filter_by_date(*date_range)
 
-        date_range = st.date_input(
-            "기간 선택",
-            (min_date, max_date),
-            min_value=min_date,
-            max_value=max_date
-        )
-
-        filtered = base_data
-        if len(date_range) == 2:
-            filtered = filtered.filter_by_date(*date_range)
-
-    # 카테고리 필터
     if 'category' in base_data.df.columns:
         categories = base_data.df['category'].unique().tolist()
         selected = st.multiselect(

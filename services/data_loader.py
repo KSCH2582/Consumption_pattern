@@ -15,11 +15,24 @@ class DataLoader:
         else:
             df = pd.read_excel(uploaded_file)
 
-        # date 컬럼을 datetime으로 변환
+        # date 컬럼을 datetime으로 변환 (coerce로 무효한 값은 NaT)
         if 'date' in df.columns:
-            df['date'] = pd.to_datetime(df['date'])
-            # 연월 컬럼 추가
-            df['year_month'] = df['date'].dt.strftime('%Y-%m')
+            df['date'] = pd.to_datetime(df['date'], errors='coerce')
+            # 변환 불가로 NaT가 생긴 행이 있으면 사용자에게 경고
+            na_count = df['date'].isna().sum()
+            if na_count > 0:
+                # 스트림릿 UI에서는 warning을 표시할 수 있도록
+                try:
+                    import streamlit as st
+                    st.warning(f"날짜 변환에 실패한 {na_count}개 행이 필터에서 제외됩니다.")
+                except ImportError:
+                    pass
+            # 연월 컬럼 추가: 월 단위 Period로 변환한 뒤
+            # to_timestamp()로 첫 날(datetime) 값을 취해 저장.
+            # 이렇게 하면 정렬이 자연스럽고 JSON 직렬화에도 안전하다.
+            df['year_month'] = df['date'].dt.to_period('M').dt.to_timestamp()
+            # NaT인 행 제거해서 이후 필터가 안전하게 동작하도록
+            df = df[df['date'].notna()]
 
         return ExpenseData(df)
 
@@ -46,7 +59,7 @@ class DataLoader:
                             '커피', '점심', '악세서리', '택시', '저녁']
         })
         
-        # 연월 컬럼 추가
-        sample_data['year_month'] = sample_data['date'].dt.strftime('%Y-%m')
+        # 연월 컬럼 추가 (월 시작일 datetime)
+        sample_data['year_month'] = sample_data['date'].dt.to_period('M').dt.to_timestamp()
         
         return ExpenseData(sample_data)

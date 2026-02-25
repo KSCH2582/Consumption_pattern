@@ -1,6 +1,8 @@
 # ui/metrics.py
 import streamlit as st
 from services.expense_analyzer import ExpenseAnalyzer
+from services.ai_insights import AIInsightService
+from utils.session import SessionManager
 
 
 def render_metrics(expense_data):
