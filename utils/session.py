@@ -20,6 +20,9 @@ class SessionManager:
         st.session_state.expense_data = expense_data
         st.session_state.filtered_data = expense_data
         st.session_state.file_name = file_name
+        # 새로운 데이터 로드 시 이전 분석 결과 초기화
+        st.session_state.last_insights = None
+        st.session_state.last_report = None
 
     @staticmethod
     def set_filtered_data(expense_data):
