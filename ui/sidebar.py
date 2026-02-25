@@ -9,10 +9,16 @@ def render_sidebar():
 
     SessionManager.init()
 
+
+    # ✅ uploader key index (핵심)
+    if "uploader_key_index" not in st.session_state:
+        st.session_state.uploader_key_index = 0
+
+
     with st.sidebar:
 
         # =====================
-        # 0. 초기화 버튼 (핵심 추가)
+        # 데이터 적용 해제 버튼
         # =====================
 
         if st.session_state.expense_data is not None:
@@ -21,16 +27,15 @@ def render_sidebar():
 
                 SessionManager.clear_data()
 
-                # uploader 초기화
-                st.session_state.pop("file_uploader", None)
-
-                st.session_state.last_uploaded_file = None
+                # uploader 완전 초기화 (핵심)
+                st.session_state.uploader_key_index += 1
 
                 st.rerun()
 
 
+
         # =====================
-        # 1. 필터
+        # 필터
         # =====================
 
         if st.session_state.expense_data is not None:
@@ -42,27 +47,25 @@ def render_sidebar():
             st.markdown("---")
 
 
+
         # =====================
-        # 2. 파일 업로드
+        # 파일 업로드
         # =====================
 
         st.header("데이터 업로드")
 
+
+        uploader_key = f"file_uploader_{st.session_state.uploader_key_index}"
+
+
         uploaded_file = st.file_uploader(
             "CSV 또는 Excel 파일",
             type=["csv", "xlsx", "xls"],
-            key="file_uploader"
+            key=uploader_key
         )
 
 
-        if "last_uploaded_file" not in st.session_state:
-
-            st.session_state.last_uploaded_file = None
-
-
-        # 새 파일 업로드
-
-        if uploaded_file is not None and uploaded_file != st.session_state.last_uploaded_file:
+        if uploaded_file is not None:
 
             try:
 
@@ -73,8 +76,6 @@ def render_sidebar():
                     file_name=uploaded_file.name
                 )
 
-                st.session_state.last_uploaded_file = uploaded_file
-
                 st.success("파일 업로드 완료")
 
                 st.rerun()
@@ -84,14 +85,17 @@ def render_sidebar():
                 st.error(e)
 
 
+
         st.markdown("---")
 
 
+
         # =====================
-        # 3. 샘플 데이터
+        # 샘플 데이터
         # =====================
 
         st.header("샘플 데이터")
+
 
         if st.button("샘플 데이터 로드"):
 
@@ -104,10 +108,8 @@ def render_sidebar():
                     file_name="sample"
                 )
 
-                # 핵심: uploader 완전 초기화
-                st.session_state.pop("file_uploader", None)
-
-                st.session_state.last_uploaded_file = None
+                # uploader 초기화 (핵심)
+                st.session_state.uploader_key_index += 1
 
                 st.success("샘플 데이터 적용됨")
 
@@ -116,6 +118,7 @@ def render_sidebar():
             except Exception as e:
 
                 st.error(e)
+
 
 
 
@@ -133,15 +136,12 @@ def _render_filters():
     if "date" in data.df.columns:
 
         min_date = data.df["date"].min().date()
-
         max_date = data.df["date"].max().date()
-
 
         date_range = st.date_input(
             "기간",
             (min_date, max_date)
         )
-
 
         if len(date_range) == 2:
 
@@ -155,13 +155,11 @@ def _render_filters():
 
         categories = data.df["category"].unique()
 
-
         selected = st.multiselect(
             "카테고리",
             categories,
             default=categories
         )
-
 
         if selected:
 
