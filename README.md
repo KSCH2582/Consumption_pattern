@@ -113,6 +113,9 @@ GPT API를 활용하여:
 
 ---
 
+#AI기능 사용 희망시 .streamlit폴더 하위에 secrets.toml파일 생성후 
+# OpenAI API key (with quotes)
+OPENAI_API_KEY = "yourkey"
 
 
 
