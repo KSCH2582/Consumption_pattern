@@ -112,6 +112,69 @@ GPT API를 활용하여:
 - 개선 제안 포함  
 
 ---
+## 🚀 실행 방법
+
+### 1️⃣ 레포지토리 클론
+
+```bash
+git clone https://github.com/KSCH2582/Consumption_pattern.git
+cd Consumption_pattern
+```
+
+---
+
+### 2️⃣ 가상환경 생성 및 활성화
+
+```bash
+python -m venv venv
+```
+
+**Mac / Linux**
+
+```bash
+source venv/bin/activate
+```
+
+**Windows**
+
+```bash
+venv\Scripts\activate
+```
+
+---
+
+### 3️⃣ 필수 패키지 설치
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+### 4️⃣ OpenAI API Key 설정 (AI 기능 사용 시)
+
+**Mac / Linux**
+
+```bash
+export OPENAI_API_KEY="your_api_key"
+```
+
+**Windows (PowerShell)**
+
+```bash
+setx OPENAI_API_KEY "your_api_key"
+```
+
+---
+
+### 5️⃣ 애플리케이션 실행
+
+```bash
+streamlit run app.py
+```
+
+브라우저가 자동으로 열리며  
+`http://localhost:8501` 에서 대시보드를 확인할 수 있습니다.
 
 AI기능 사용 희망시 .streamlit폴더 하위에 secrets.toml파일 생성후 
 OPENAI_API_KEY = "your_key"
