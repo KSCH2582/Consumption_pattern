@@ -46,28 +46,29 @@ GPT 프롬프트 엔지니어링
 AI 인사이트 및 예산 가이드 생성
 
 ## 🏗️ 아키텍처 구조
-├─ app.py # Streamlit 엔트리 포인트 (UI 중심)
+
+```
+/
+│
+├─ app.py                     # Streamlit 엔트리 포인트 (UI 중심)
 │
 ├─ services/
-│ ├─ data_loader.py # 파일 로딩 / 전처리
-│ ├─ expense_analyzer.py # 통계 계산 로직
-│ ├─ ai_insights.py # OpenAI 연동
-│ └─ report_generator.py # 월간 리포트 생성
+│   ├─ data_loader.py         # 파일 로딩 / 전처리
+│   ├─ expense_analyzer.py    # 통계 계산 로직
+│   ├─ ai_insights.py         # OpenAI 연동
+│   └─ report_generator.py    # 월간 리포트 생성
 │
 ├─ ui/
-│ ├─ sidebar.py # 사이드바 UI
-│ ├─ metrics.py # KPI 카드
-│ └─ charts.py # Plotly 차트
+│   ├─ sidebar.py             # 사이드바 UI
+│   ├─ metrics.py             # KPI 카드
+│   └─ charts.py              # Plotly 차트
 │
 ├─ models/
-│ └─ expense_data.py # 데이터 객체 관리
+│   └─ expense_data.py        # 데이터 객체 관리
 │
 └─ utils/
-└─ session.py # session_state 관리
-
-
-✔ UI / 분석 로직 / AI 계층 분리  
-✔ 유지보수성과 확장성을 고려한 Layered Architecture 설계  
+    └─ session.py             # session_state 관리
+``` 
 
 ---
 
