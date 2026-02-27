@@ -176,8 +176,6 @@ streamlit run app.py
 브라우저가 자동으로 열리며  
 `http://localhost:8501` 에서 대시보드를 확인할 수 있습니다.
 
-AI기능 사용 희망시 .streamlit폴더 하위에 secrets.toml파일 생성후 
-OPENAI_API_KEY = "your_key"
 
 
 
